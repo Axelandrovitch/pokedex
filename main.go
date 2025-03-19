@@ -2,7 +2,11 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -27,13 +31,19 @@ func initCommands() {
 			Description: "Lists available commands",
 			Callback:    commandHelp,
 		},
+		"map": {
+			Name:        "map",
+			Description: "Displays location areas in the Pokemon world",
+			Callback:    commandMap,
+		},
 	}
 }
 
 func main() {
 	initCommands()
 	fmt.Println("Welcome to the Pokedex!")
-	readFromStdin()
+	//	readFromStdin()
+	commandMap()
 }
 
 func cleanInput(text string) []string {
@@ -82,4 +92,38 @@ func commandHelp() error {
 		fmt.Printf(" %s: %s\n", cmd.Name, cmd.Description)
 	}
 	return fmt.Errorf("Error executing help command")
+}
+
+type Location struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
+}
+
+type APIResponse struct {
+	Results []Location `json:"results"`
+}
+
+func commandMap() error {
+	res, err := http.Get("https://pokeapi.co/api/v2/location-area/")
+	if err != nil {
+		log.Fatalf("Failed tp fetch data: %v", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		log.Fatalf("Response failed with status code %d ", res.StatusCode)
+	}
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Fatalf("Failed to read response body %v", err)
+	}
+	var apiResponse APIResponse
+	err = json.Unmarshal(body, &apiResponse)
+	if err != nil {
+		return fmt.Errorf("Could not unmarshal %d", err)
+	}
+	for _, location := range apiResponse.Results {
+		fmt.Printf("Name: %s, URL: %s\n", location.Name, location.Url)
+	}
+	return nil
 }
