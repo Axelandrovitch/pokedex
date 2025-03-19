@@ -32,7 +32,8 @@ func initCommands() {
 
 func main() {
 	initCommands()
-	fmt.Println(readFromStdin())
+	fmt.Println("Welcome to the Pokedex!")
+	readFromStdin()
 }
 
 func cleanInput(text string) []string {
@@ -45,25 +46,28 @@ func cleanInput(text string) []string {
 	return split
 }
 
-func readFromStdin() []string {
+func readFromStdin() {
+	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		input := cleanInput(scanner.Text())
-		if len(input[0]) > 0 {
-			command := input[0]
-			executeUserCommand(command)
+		if !scanner.Scan() {
+			break
 		}
+		input := cleanInput(scanner.Text())
+		if len(input) == 0 {
+			continue
+		}
+		command := input[0]
+		executeUserCommand(command)
 	}
 }
 
-func executeUserCommand(command string) error {
+func executeUserCommand(command string) {
 	if cmd, validCommand := supportedCommands[command]; validCommand {
-		return cmd.Callback()
+		cmd.Callback()
+	} else {
+		fmt.Println("Unknown command")
 	}
-	fmt.Println("Unknown command")
-	return fmt.Errorf("Unknown command")
 }
 
 func commandExit() error {
@@ -73,11 +77,9 @@ func commandExit() error {
 }
 
 func commandHelp() error {
-	fmt.Println("Usage <.pokedex> <command>")
-	fmt.Println("Available commands:")
+	fmt.Println("Usage: ")
 	for _, cmd := range supportedCommands {
-		fmt.Println(cmd.Name)
-		fmt.Printf("\t %s\n", cmd.Description)
+		fmt.Printf(" %s: %s\n", cmd.Name, cmd.Description)
 	}
 	return fmt.Errorf("Error executing help command")
 }
