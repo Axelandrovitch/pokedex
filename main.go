@@ -2,13 +2,11 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Axelandrovitch/pokedex/pokeapi"
 )
 
 type cliCommand struct {
@@ -94,36 +92,14 @@ func commandHelp() error {
 	return fmt.Errorf("Error executing help command")
 }
 
-type Location struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
-}
-
-type APIResponse struct {
-	Results []Location `json:"results"`
-}
-
 func commandMap() error {
-	res, err := http.Get("https://pokeapi.co/api/v2/location-area/")
+	apiData, err := pokeapi.FetchLocations()
 	if err != nil {
-		log.Fatalf("Failed tp fetch data: %v", err)
+		return err
 	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		log.Fatalf("Response failed with status code %d ", res.StatusCode)
-	}
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body %v", err)
-	}
-	var apiResponse APIResponse
-	err = json.Unmarshal(body, &apiResponse)
-	if err != nil {
-		return fmt.Errorf("Could not unmarshal %d", err)
-	}
-	for _, location := range apiResponse.Results {
-		fmt.Printf("Name: %s, URL: %s\n", location.Name, location.Url)
+	locations := apiData.Results
+	for _, location := range locations {
+		fmt.Println(location.Name)
 	}
 	return nil
 }
