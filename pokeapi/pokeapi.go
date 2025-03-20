@@ -19,8 +19,8 @@ type LocationsApiData struct {
 	PreviousUrl string     `json:"previous"`
 }
 
-func FetchLocations() (LocationsApiData, error) {
-	res, err := http.Get("https://pokeapi.co/api/v2/location-area/")
+func FetchLocations(url string) (LocationsApiData, error) {
+	res, err := http.Get(url)
 	if err != nil {
 		return LocationsApiData{}, fmt.Errorf("Failed to fetch data %w", err)
 	}
