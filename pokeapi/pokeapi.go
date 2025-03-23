@@ -17,6 +17,8 @@ type LocationsApiData struct {
 	Results     []Location `json:"results"`
 	NextUrl     string     `json:"next"`
 	PreviousUrl string     `json:"previous"`
+	BaseUrl     string
+	FirstFectch bool
 }
 
 func FetchLocations(url string) (LocationsApiData, error) {

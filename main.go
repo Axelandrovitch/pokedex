@@ -61,12 +61,10 @@ func cleanInput(text string) []string {
 
 func readFromStdin() {
 	scanner := bufio.NewScanner(os.Stdin)
+	var apiData pokeapi.LocationsApiData
+	apiData.FirstFectch = true
+	apiData.BaseUrl = "https://pokeapi.co/api/v2/location-area/"
 	for {
-		apiData, err := pokeapi.FetchLocations("https://pokeapi.co/api/v2/location-area/")
-		if err != nil {
-			fmt.Print(err)
-			return
-		}
 		fmt.Print("Pokedex > ")
 		if !scanner.Scan() {
 			break
@@ -103,22 +101,30 @@ func commandHelp(apiData *pokeapi.LocationsApiData) error {
 }
 
 func commandMap(apiData *pokeapi.LocationsApiData) error {
-	/*
-		locations := apiData.Results
-		for _, location := range locations {
-			fmt.Println(location.Name)
-		}
-	*/
-	fmt.Println(apiData.NextUrl)
-	fmt.Println(apiData.PreviousUrl)
-	if apiData.NextUrl != "" {
-		UpdatedApiData, err := pokeapi.FetchLocations(apiData.NextUrl)
+	if *&apiData.FirstFectch == true {
+		UpdatedApiData, err := pokeapi.FetchLocations(apiData.BaseUrl)
 		if err != nil {
 			return fmt.Errorf("Failed to update API data %d", err)
 		}
 		*apiData = UpdatedApiData
-	} else {
-		fmt.Println("No more locations to explore !")
+		*&apiData.FirstFectch = false
+		locations := apiData.Results
+		for _, location := range locations {
+			fmt.Println(location.Name)
+		}
+		return nil
+	}
+	if apiData.NextUrl == "" {
+		return fmt.Errorf("No more locations to explore in this direction!")
+	}
+	UpdatedApiData, err := pokeapi.FetchLocations(apiData.NextUrl)
+	if err != nil {
+		return fmt.Errorf("Failed to update API data %d", err)
+	}
+	*apiData = UpdatedApiData
+	locations := apiData.Results
+	for _, location := range locations {
+		fmt.Println(location.Name)
 	}
 	return nil
 }
