@@ -9,15 +9,15 @@ import (
 
 type Location struct {
 	Name string `json:"name"`
-	Url  string `json:"url"`
+	URL  string `json:"url"`
 }
 
 type LocationsApiData struct {
 	Count       int        `json:"count"`
 	Results     []Location `json:"results"`
-	NextUrl     string     `json:"next"`
-	PreviousUrl string     `json:"previous"`
-	BaseUrl     string
+	NextURL     string     `json:"next"`
+	PreviousURL string     `json:"previous"`
+	BaseURL     string
 	FirstFectch bool
 }
 
@@ -38,7 +38,7 @@ func FetchLocations(url string) (LocationsApiData, error) {
 	var apiResponse LocationsApiData
 	err = json.Unmarshal(body, &apiResponse)
 	if err != nil {
-		return LocationsApiData{}, fmt.Errorf("Could not unmarshal JSON %d", err)
+		return LocationsApiData{}, fmt.Errorf("Could not unmarshal JSON %w", err)
 	}
 	return apiResponse, nil
 }

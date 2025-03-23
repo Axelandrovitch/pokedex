@@ -63,7 +63,7 @@ func readFromStdin() {
 	scanner := bufio.NewScanner(os.Stdin)
 	var apiData pokeapi.LocationsApiData
 	apiData.FirstFectch = true
-	apiData.BaseUrl = "https://pokeapi.co/api/v2/location-area/"
+	apiData.BaseURL = "https://pokeapi.co/api/v2/location-area/"
 	for {
 		fmt.Print("Pokedex > ")
 		if !scanner.Scan() {
@@ -102,9 +102,9 @@ func commandHelp(apiData *pokeapi.LocationsApiData) error {
 
 func commandMap(apiData *pokeapi.LocationsApiData) error {
 	if *&apiData.FirstFectch == true {
-		UpdatedApiData, err := pokeapi.FetchLocations(apiData.BaseUrl)
+		UpdatedApiData, err := pokeapi.FetchLocations(apiData.BaseURL)
 		if err != nil {
-			return fmt.Errorf("Failed to update API data %d", err)
+			return fmt.Errorf("Failed to update API data %w", err)
 		}
 		*apiData = UpdatedApiData
 		*&apiData.FirstFectch = false
@@ -114,12 +114,13 @@ func commandMap(apiData *pokeapi.LocationsApiData) error {
 		}
 		return nil
 	}
-	if apiData.NextUrl == "" {
-		return fmt.Errorf("No more locations to explore in this direction!")
+	if apiData.NextURL == "" {
+		fmt.Println("No more locations to explore in this direction!")
+		return nil
 	}
-	UpdatedApiData, err := pokeapi.FetchLocations(apiData.NextUrl)
+	UpdatedApiData, err := pokeapi.FetchLocations(apiData.NextURL)
 	if err != nil {
-		return fmt.Errorf("Failed to update API data %d", err)
+		return fmt.Errorf("Failed to update API data %w", err)
 	}
 	*apiData = UpdatedApiData
 	locations := apiData.Results
@@ -131,10 +132,14 @@ func commandMap(apiData *pokeapi.LocationsApiData) error {
 
 func commandMapBack(apiData *pokeapi.LocationsApiData) error {
 
-	if apiData.PreviousUrl != "" {
-		UpdatedApiData, err := pokeapi.FetchLocations(apiData.PreviousUrl)
+	if apiData.PreviousURL == "" {
+		fmt.Println("No more locations to explore in this direction!")
+		return nil
+	}
+	if apiData.PreviousURL != "" {
+		UpdatedApiData, err := pokeapi.FetchLocations(apiData.PreviousURL)
 		if err != nil {
-			return fmt.Errorf("Failed to update API data %d", err)
+			return fmt.Errorf("Failed to update API data %w", err)
 		}
 		*apiData = UpdatedApiData
 	}
