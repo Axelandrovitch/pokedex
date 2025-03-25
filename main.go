@@ -8,8 +8,10 @@ import (
 )
 
 type Config struct {
-	Cache     *pokecache.Cache
-	Locations *pokeapi.LocationsApiData
+	Cache     	*pokecache.Cache
+	Locations 	*pokeapi.LocationsApiData
+	currentCmd	string
+	cmdArgv		[]string
 }
 
 type cliCommand struct {

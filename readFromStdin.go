@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	"github.com/Axelandrovitch/pokedex/internal/pokeapi"
 	"github.com/Axelandrovitch/pokedex/internal/pokecache"
 )
@@ -37,13 +38,17 @@ func readFromStdin() {
 		if len(input) == 0 {
 			continue
 		}
-		command := input[0]
-		executeUserCommand(command, config)
+		executeUserCommand(input, config)
 	}
 }
 
-func executeUserCommand(command string, config *Config) {
-	if cmd, validCommand := getCommands()[command]; validCommand {
+func executeUserCommand(input []string, config *Config) {
+	if cmd, validCommand := getCommands()[input[0]]; validCommand {
+		config.currentCmd = input[0]
+		config.cmdArgv = nil
+		if len(input) > 1 {
+			config.cmdArgv = input[1:]
+		}
 		cmd.Callback(config)
 	} else {
 		fmt.Println("Unknown command")
