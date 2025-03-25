@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Axelandrovitch/pokedex/internal/pokeapi"
 	"github.com/Axelandrovitch/pokedex/internal/pokecache"
@@ -67,7 +68,7 @@ func cleanInput(text string) []string {
 func readFromStdin() {
 	scanner := bufio.NewScanner(os.Stdin)
 	config := &Config{
-		Cache: nil,
+		Cache: pokecache.NewCache(time.Minute * 5),
 		Locations: &pokeapi.LocationsApiData{
 			FirstFectch: true,
 			BaseURL:     "https://pokeapi.co/api/v2/location-area/",
@@ -112,7 +113,7 @@ func commandHelp(config *Config) error {
 func commandMap(config *Config) error {
 	LocationsApiData := config.Locations
 	if LocationsApiData.FirstFectch {
-		UpdatedApiData, err := pokeapi.FetchLocations(LocationsApiData.BaseURL)
+		UpdatedApiData, err := pokeapi.FetchLocations(config.Cache, LocationsApiData.BaseURL)
 		if err != nil {
 			return fmt.Errorf("failed to update API data %w", err)
 		}
@@ -128,7 +129,7 @@ func commandMap(config *Config) error {
 		fmt.Println("No more locations to explore in this direction!")
 		return nil
 	}
-	UpdatedApiData, err := pokeapi.FetchLocations(LocationsApiData.NextURL)
+	UpdatedApiData, err := pokeapi.FetchLocations(config.Cache, LocationsApiData.NextURL)
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}
@@ -146,7 +147,7 @@ func commandMapBack(config *Config) error {
 		fmt.Println("No more locations to explore in this direction!")
 		return nil
 	}
-	updatedApiData, err := pokeapi.FetchLocations(LocationsApiData.PreviousURL)
+	updatedApiData, err := pokeapi.FetchLocations(config.Cache, LocationsApiData.PreviousURL)
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}
