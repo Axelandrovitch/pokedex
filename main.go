@@ -6,13 +6,19 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Axelandrovitch/pokedex/pokeapi"
+	"github.com/Axelandrovitch/pokedex/internal/pokeapi"
+	"github.com/Axelandrovitch/pokedex/internal/pokecache"
 )
+
+type Config struct {
+	Cache     *pokecache.Cache
+	Locations *pokeapi.LocationsApiData
+}
 
 type cliCommand struct {
 	Name        string
 	Description string
-	Callback    func(*pokeapi.LocationsApiData) error
+	Callback    func(*Config) error
 }
 
 var supportedCommands map[string]cliCommand
@@ -55,15 +61,18 @@ func cleanInput(text string) []string {
 	}
 	trimmed := strings.TrimSpace(strings.ToLower(text))
 	split := strings.Fields(trimmed)
-
 	return split
 }
 
 func readFromStdin() {
 	scanner := bufio.NewScanner(os.Stdin)
-	var apiData pokeapi.LocationsApiData
-	apiData.FirstFectch = true
-	apiData.BaseURL = "https://pokeapi.co/api/v2/location-area/"
+	config := &Config{
+		Cache: nil,
+		Locations: &pokeapi.LocationsApiData{
+			FirstFectch: true,
+			BaseURL:     "https://pokeapi.co/api/v2/location-area/",
+		},
+	}
 	for {
 		fmt.Print("Pokedex > ")
 		if !scanner.Scan() {
@@ -74,76 +83,75 @@ func readFromStdin() {
 			continue
 		}
 		command := input[0]
-		executeUserCommand(command, &apiData)
+		executeUserCommand(command, config)
 	}
 }
 
-func executeUserCommand(command string, apiData *pokeapi.LocationsApiData) {
+func executeUserCommand(command string, config *Config) {
 	if cmd, validCommand := supportedCommands[command]; validCommand {
-		cmd.Callback(apiData)
+		cmd.Callback(config)
 	} else {
 		fmt.Println("Unknown command")
 	}
 }
 
-func commandExit(apiData *pokeapi.LocationsApiData) error {
+func commandExit(config *Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
-	return fmt.Errorf("Error exiting the program")
+	return nil
 }
 
-func commandHelp(apiData *pokeapi.LocationsApiData) error {
+func commandHelp(config *Config) error {
 	fmt.Println("Usage: ")
 	for _, cmd := range supportedCommands {
 		fmt.Printf(" %s: %s\n", cmd.Name, cmd.Description)
 	}
-	return fmt.Errorf("Error executing help command")
+	return nil
 }
 
-func commandMap(apiData *pokeapi.LocationsApiData) error {
-	if *&apiData.FirstFectch == true {
-		UpdatedApiData, err := pokeapi.FetchLocations(apiData.BaseURL)
+func commandMap(config *Config) error {
+	LocationsApiData := config.Locations
+	if LocationsApiData.FirstFectch {
+		UpdatedApiData, err := pokeapi.FetchLocations(LocationsApiData.BaseURL)
 		if err != nil {
-			return fmt.Errorf("Failed to update API data %w", err)
+			return fmt.Errorf("failed to update API data %w", err)
 		}
-		*apiData = UpdatedApiData
-		*&apiData.FirstFectch = false
-		locations := apiData.Results
+		*LocationsApiData = UpdatedApiData
+		LocationsApiData.FirstFectch = false
+		locations := LocationsApiData.Results
 		for _, location := range locations {
 			fmt.Println(location.Name)
 		}
 		return nil
 	}
-	if apiData.NextURL == "" {
+	if LocationsApiData.NextURL == "" {
 		fmt.Println("No more locations to explore in this direction!")
 		return nil
 	}
-	UpdatedApiData, err := pokeapi.FetchLocations(apiData.NextURL)
+	UpdatedApiData, err := pokeapi.FetchLocations(LocationsApiData.NextURL)
 	if err != nil {
-		return fmt.Errorf("Failed to update API data %w", err)
+		return fmt.Errorf("failed to update API data %w", err)
 	}
-	*apiData = UpdatedApiData
-	locations := apiData.Results
+	*LocationsApiData = UpdatedApiData
+	locations := LocationsApiData.Results
 	for _, location := range locations {
 		fmt.Println(location.Name)
 	}
 	return nil
 }
 
-func commandMapBack(apiData *pokeapi.LocationsApiData) error {
-
-	if apiData.PreviousURL == "" {
+func commandMapBack(config *Config) error {
+	LocationsApiData := config.Locations
+	if LocationsApiData.PreviousURL == "" {
 		fmt.Println("No more locations to explore in this direction!")
 		return nil
 	}
-	if apiData.PreviousURL != "" {
-		UpdatedApiData, err := pokeapi.FetchLocations(apiData.PreviousURL)
-		if err != nil {
-			return fmt.Errorf("Failed to update API data %w", err)
-		}
-		*apiData = UpdatedApiData
+	updatedApiData, err := pokeapi.FetchLocations(LocationsApiData.PreviousURL)
+	if err != nil {
+		return fmt.Errorf("failed to update API data %w", err)
 	}
-	locations := apiData.Results
+	*LocationsApiData = updatedApiData
+	locations := LocationsApiData.Results
 	for _, location := range locations {
 		fmt.Println(location.Name)
 	}
