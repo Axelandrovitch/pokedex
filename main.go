@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	Cache     	*pokecache.Cache
-	Locations 	*pokeapi.LocationsApiData
-	currentCmd	string
-	cmdArgv		[]string
+	Cache      *pokecache.Cache
+	Locations  *pokeapi.LocationsApiData
+	currentCmd string
+	cmdArgs    []string
+	currentURL string
 }
 
 type cliCommand struct {
@@ -24,5 +25,3 @@ func main() {
 	fmt.Println("Welcome to the Pokedex!")
 	readFromStdin()
 }
-
-

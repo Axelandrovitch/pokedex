@@ -45,9 +45,9 @@ func readFromStdin() {
 func executeUserCommand(input []string, config *Config) {
 	if cmd, validCommand := getCommands()[input[0]]; validCommand {
 		config.currentCmd = input[0]
-		config.cmdArgv = nil
+		config.cmdArgs = nil
 		if len(input) > 1 {
-			config.cmdArgv = input[1:]
+			config.cmdArgs = input[1:]
 		}
 		cmd.Callback(config)
 	} else {
