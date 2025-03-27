@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Axelandrovitch/pokedex/internal/pokeapi"
 	"github.com/Axelandrovitch/pokedex/internal/pokecache"
@@ -22,6 +23,7 @@ type cliCommand struct {
 }
 
 func main() {
+	client := pokeapi.NewClient(5 * time.Second, 5 * time.Minute)
 	fmt.Println("Welcome to the Pokedex!")
 	readFromStdin()
 }

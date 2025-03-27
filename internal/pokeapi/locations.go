@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Axelandrovitch/pokedex/internal/pokecache"
 )
@@ -22,6 +23,14 @@ type LocationsApiData struct {
 	BaseURL     string
 	FirstFectch bool
 }
+
+type Client struct {
+	cache		pokecache.Cache
+	httpClient	http.Client
+	baseURL		string
+}
+
+func NewClient(baseURL string, timeout, cacheDuration time.Duration) error 
 
 func FetchLocations(cache *pokecache.Cache, url string) (LocationsApiData, error) {
 	var apiResponse LocationsApiData
