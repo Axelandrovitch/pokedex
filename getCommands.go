@@ -1,5 +1,13 @@
 package main
 
+
+type cliCommand struct {
+	Name        string
+	Description string
+	Callback    func(*Config) error
+}
+
+
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"exit": {

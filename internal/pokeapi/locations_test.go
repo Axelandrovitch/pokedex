@@ -1,8 +1,10 @@
 package pokeapi
 
 import (
+	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/Axelandrovitch/pokedex/internal/pokecache"
 )
@@ -33,7 +35,13 @@ func TestFetchLocations(t *testing.T) {
 	}
 
 	cache := pokecache.NewCache(5)
-	data, err := FetchLocations(cache, url)
+	client := &Client{
+		cache:      *cache,
+		httpClient: http.Client{Timeout: 5 * time.Second},
+		baseURL:    "https://pokeapi.co/api/v2/",
+	}
+
+	data, err := FetchLocations(client, url)
 	if err != nil {
 		t.Fatalf("expected to fetch locations, got error: %v", err)
 	}

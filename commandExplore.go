@@ -2,14 +2,14 @@ package main
 
 import "fmt"
 
-func commandExplore(c *Config) error {
+func commandExplore(config *Config) error {
 	fmt.Println("Explore !")
-	for _, cmd := range c.cmdArgs {
+	for _, cmd := range config.cmdArgs {
 		fmt.Println(cmd)
 	}
-	if !c.Locations.FirstFectch {
+	if !config.Locations.FirstFectch {
 		//look for pokemons
-		
+
 	}
 	return nil
 }

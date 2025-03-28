@@ -11,7 +11,7 @@ func commandMap(config *Config) error {
 	var url string
 	if LocationsApiData.FirstFectch {
 		LocationsApiData.FirstFectch = false
-		url = LocationsApiData.BaseURL
+		url = LocationsApiData.BaseLocationAreaURL
 	} else {
 		if LocationsApiData.NextURL == "" {
 			fmt.Println("No more locations to explore in this direction!")
@@ -19,7 +19,7 @@ func commandMap(config *Config) error {
 		}
 		url = LocationsApiData.NextURL
 	}
-	UpdatedApiData, err := pokeapi.FetchLocations(config.Cache, url)
+	UpdatedApiData, err := pokeapi.FetchLocations(config.Client, url)
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}
@@ -37,7 +37,7 @@ func commandMapBack(config *Config) error {
 		fmt.Println("No more locations to explore in this direction!")
 		return nil
 	}
-	updatedApiData, err := pokeapi.FetchLocations(config.Cache, LocationsApiData.PreviousURL)
+	updatedApiData, err := pokeapi.FetchLocations(config.Client, LocationsApiData.PreviousURL)
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}

@@ -5,11 +5,17 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/Axelandrovitch/pokedex/internal/pokeapi"
-	"github.com/Axelandrovitch/pokedex/internal/pokecache"
 )
+
+type Config struct {
+	Client     *pokeapi.Client
+	Locations  *pokeapi.LocationsApiData
+	currentCmd string
+	// currentURL string
+	cmdArgs    []string
+}
 
 func cleanInput(text string) []string {
 	if len(text) == 0 {
@@ -20,13 +26,14 @@ func cleanInput(text string) []string {
 	return split
 }
 
-func readFromStdin() {
+func readFromStdin(client pokeapi.Client) {
 	scanner := bufio.NewScanner(os.Stdin)
+
 	config := &Config{
-		Cache: pokecache.NewCache(time.Minute * 5),
+		Client: &client,
 		Locations: &pokeapi.LocationsApiData{
+			BaseLocationAreaURL:     "https://pokeapi.co/api/v2/location-area/",
 			FirstFectch: true,
-			BaseURL:     "https://pokeapi.co/api/v2/location-area/",
 		},
 	}
 	for {

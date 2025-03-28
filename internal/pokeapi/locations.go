@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
-
-	"github.com/Axelandrovitch/pokedex/internal/pokecache"
 )
 
 type Location struct {
@@ -20,44 +17,37 @@ type LocationsApiData struct {
 	Results     []Location `json:"results"`
 	NextURL     string     `json:"next"`
 	PreviousURL string     `json:"previous"`
-	BaseURL     string
+	BaseLocationAreaURL     string
 	FirstFectch bool
 }
 
-type Client struct {
-	cache		pokecache.Cache
-	httpClient	http.Client
-	baseURL		string
-}
-
-func NewClient(baseURL string, timeout, cacheDuration time.Duration) error 
-
-func FetchLocations(cache *pokecache.Cache, url string) (LocationsApiData, error) {
+func FetchLocations(client *Client, url string) (LocationsApiData, error) {
 	var apiResponse LocationsApiData
-	if val, ok := cache.Get(url); ok {
+	if val, ok := client.cache.Get(url); ok {
 		err := json.Unmarshal(val, &apiResponse)
 		if err != nil {
-			return LocationsApiData{}, fmt.Errorf("could not unmarshal JSON %w", err)
+			return LocationsApiData{}, fmt.Errorf("could not unmarshal JSON from cache %w", err)
 		}
 		return apiResponse, nil
 	}
-	res, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return LocationsApiData{}, fmt.Errorf("failed to fetch data %w", err)
+		return LocationsApiData{}, err
 	}
-	defer res.Body.Close()
+	resp, err := client.httpClient.Do(req)
+	if err != nil {
+		return LocationsApiData{}, fmt.Errorf("failed to fetch data from %s: %v", url, err)
+	}
+	defer resp.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return LocationsApiData{}, fmt.Errorf("response failed with status code %d ", res.StatusCode)
-	}
-	body, err := io.ReadAll(res.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return LocationsApiData{}, fmt.Errorf("failed to read response body %v", err)
 	}
-	cache.Add(url, body)
 	err = json.Unmarshal(body, &apiResponse)
 	if err != nil {
 		return LocationsApiData{}, fmt.Errorf("could not unmarshal JSON %w", err)
 	}
+	client.cache.Add(url, body)
 	return apiResponse, nil
 }
