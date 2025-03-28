@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/Axelandrovitch/pokedex/internal/pokeapi"
 )
 
 func commandMap(config *Config) error {
@@ -19,7 +17,7 @@ func commandMap(config *Config) error {
 		}
 		url = LocationsApiData.NextURL
 	}
-	UpdatedApiData, err := pokeapi.FetchLocations(config.Client, url)
+	UpdatedApiData, err := config.Client.FetchLocations(url)
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}
@@ -37,7 +35,7 @@ func commandMapBack(config *Config) error {
 		fmt.Println("No more locations to explore in this direction!")
 		return nil
 	}
-	updatedApiData, err := pokeapi.FetchLocations(config.Client, LocationsApiData.PreviousURL)
+	updatedApiData, err := config.Client.FetchLocations(LocationsApiData.PreviousURL)
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}

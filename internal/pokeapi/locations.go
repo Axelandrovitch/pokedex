@@ -21,7 +21,7 @@ type LocationsApiData struct {
 	FirstFectch bool
 }
 
-func FetchLocations(client *Client, url string) (LocationsApiData, error) {
+func (client *Client)FetchLocations(url string) (LocationsApiData, error) {
 	var apiResponse LocationsApiData
 	if val, ok := client.cache.Get(url); ok {
 		err := json.Unmarshal(val, &apiResponse)

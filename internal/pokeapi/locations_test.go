@@ -41,7 +41,7 @@ func TestFetchLocations(t *testing.T) {
 		baseURL:    "https://pokeapi.co/api/v2/",
 	}
 
-	data, err := FetchLocations(client, url)
+	data, err := client.FetchLocations(url)
 	if err != nil {
 		t.Fatalf("expected to fetch locations, got error: %v", err)
 	}
