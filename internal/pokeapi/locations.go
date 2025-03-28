@@ -17,6 +17,7 @@ type LocationsApiData struct {
 	Results     []Location `json:"results"`
 	NextURL     string     `json:"next"`
 	PreviousURL string     `json:"previous"`
+	CurrentURL string
 	BaseLocationAreaURL     string
 	FirstFectch bool
 }
@@ -49,5 +50,6 @@ func (client *Client)FetchLocations(url string) (LocationsApiData, error) {
 		return LocationsApiData{}, fmt.Errorf("could not unmarshal JSON %w", err)
 	}
 	client.cache.Add(url, body)
+	apiResponse.CurrentURL = url
 	return apiResponse, nil
 }

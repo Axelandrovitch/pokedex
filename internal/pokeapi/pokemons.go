@@ -1,34 +1,20 @@
 package pokeapi
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 type Pokemons []string
 
-func validLocation(userLocation string, locations []Location) (string, bool) {
-
-	for _, location := range locations {
-		if location.Name == userLocation {
-			return location.URL, true
-		}
-	}
-	return "", false
-}
-
-func (client *Client) fetchPokemons(url string) (Pokemons, error) {
-	
-	chosenLocation := arguments[0]
-	url, ok := validLocation(chosenLocation, locations)
-	if !ok {
-		return nil, fmt.Errorf("given location could not be found in current map")
-	}
+func (client *Client) FetchPokemons(url string) (Pokemons, error) {
 	var pokemons Pokemons
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
+	if val, ok := client.cache.Get(url); ok {
+		err := json.Unmarshal(val, &pokemons)
+		if err != nil {
+			return Pokemons{}, fmt.Errorf("could not unmarshal JSON from cache %w", err)
+		}
+		return pokemons, nil
 	}
-	resp, err := 
-	return nil, nil
+	return pokemons, nil
 }
