@@ -31,11 +31,11 @@ func commandExplore(config *Config) error {
 		return fmt.Errorf("given location: %s is invalid", userLocation)
 	}
 	locationURL := config.Locations.CurrentURL + "/" + location
-	pokemons, err := config.Client.FetchPokemons(locationURL)
+	pokemonEncounters, err := config.Client.FetchPokemons(locationURL)
 	if err != nil {
 		return fmt.Errorf("failed to fetch pokemons from given location %w", err)
 	}
-	for _, pokemon := range pokemons {
+	for _, pokemon := range pokemonEncounters {
 		fmt.Println(pokemon)
 	}
 	return nil

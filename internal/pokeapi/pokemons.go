@@ -5,16 +5,24 @@ import (
 	"fmt"
 )
 
-type Pokemons []string
+type Pokemon struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
 
-func (client *Client) FetchPokemons(url string) (Pokemons, error) {
-	var pokemons Pokemons
+type PokemonEncounters struct {
+	Pokemon        Pokemon          `json:"pokemon"`
+}
+
+func (client *Client) FetchPokemons(url string) (PokemonEncounters, error) {
+	var pokemonEncounters PokemonEncounters
 	if val, ok := client.cache.Get(url); ok {
-		err := json.Unmarshal(val, &pokemons)
+		err := json.Unmarshal(val, &pokemonEncounters)
 		if err != nil {
-			return Pokemons{}, fmt.Errorf("could not unmarshal JSON from cache %w", err)
+			return PokemonEncounters{}, fmt.Errorf("could not unmarshal JSON from cache %w", err)
 		}
-		return pokemons, nil
+		return pokemonEncounters, nil
 	}
-	return pokemons, nil
+	
+	return pokemonEncounters, nil
 }
