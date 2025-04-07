@@ -3,6 +3,8 @@ package pokeapi
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 )
 
 type Pokemon struct {
@@ -10,19 +12,40 @@ type Pokemon struct {
 	URL  string `json:"url"`
 }
 
-type PokemonEncounters struct {
-	Pokemon        Pokemon          `json:"pokemon"`
+type PokemonEncounter struct {
+	Pokemon Pokemon `json:"pokemon"`
 }
 
-func (client *Client) FetchPokemons(url string) (PokemonEncounters, error) {
-	var pokemonEncounters PokemonEncounters
-	if val, ok := client.cache.Get(url); ok {
-		err := json.Unmarshal(val, &pokemonEncounters)
-		if err != nil {
-			return PokemonEncounters{}, fmt.Errorf("could not unmarshal JSON from cache %w", err)
-		}
-		return pokemonEncounters, nil
+func (client *Client) FetchPokemons(url string) ([]PokemonEncounter, error) {
+	var APIResponse struct {
+		PokemonEncounters []PokemonEncounter `json:"pokemon_encounters"`
 	}
-	
-	return pokemonEncounters, nil
+	if val, ok := client.cache.Get(url); ok {
+		err := json.Unmarshal(val, &APIResponse)
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarshal JSON from cache %w", err)
+		}
+		return APIResponse.PokemonEncounters, nil
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch data from %s: %v", url, err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response from body %v", err)
+	}
+	err = json.Unmarshal(body, &APIResponse)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal JSON %w", err)
+	}
+	println(body)
+	client.cache.Add(url, body)
+	return APIResponse.PokemonEncounters, nil
 }

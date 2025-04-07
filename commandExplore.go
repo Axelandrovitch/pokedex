@@ -16,8 +16,14 @@ func validLocation(userLocation string, locations []pokeapi.Location) (string, b
 	return "", false
 }
 
+func printPokemons(pokemons []pokeapi.PokemonEncounter) {
+	fmt.Println("Found Pokemon:")
+	for _, pokemon := range pokemons{
+		fmt.Printf(" - %s\n",pokemon.Pokemon.Name)
+	}
+}
+
 func commandExplore(config *Config) error {
-	fmt.Println("Explore !")
 	for _, cmd := range config.cmdArgs {
 		fmt.Println(cmd)
 	}
@@ -26,17 +32,16 @@ func commandExplore(config *Config) error {
 		return nil
 	}
 	userLocation := config.cmdArgs[0]
-	location, exists := validLocation(userLocation, config.Locations.Results)
+	locationURL, exists := validLocation(userLocation, config.Locations.Results)
 	if !exists {
 		return fmt.Errorf("given location: %s is invalid", userLocation)
 	}
-	locationURL := config.Locations.CurrentURL + "/" + location
+	fmt.Printf("Exploring %s...\n", userLocation)
 	pokemonEncounters, err := config.Client.FetchPokemons(locationURL)
 	if err != nil {
 		return fmt.Errorf("failed to fetch pokemons from given location %w", err)
 	}
-	for _, pokemon := range pokemonEncounters {
-		fmt.Println(pokemon)
-	}
+	fmt.Println("We arrive here")
+	printPokemons(pokemonEncounters)
 	return nil
 }
