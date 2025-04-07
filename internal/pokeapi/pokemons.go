@@ -45,7 +45,6 @@ func (client *Client) FetchPokemons(url string) ([]PokemonEncounter, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal JSON %w", err)
 	}
-	println(body)
 	client.cache.Add(url, body)
 	return APIResponse.PokemonEncounters, nil
 }

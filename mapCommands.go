@@ -21,7 +21,9 @@ func commandMap(config *Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to update API data %w", err)
 	}
-	*LocationsApiData = UpdatedApiData
+	LocationsApiData.Results = UpdatedApiData.Results
+	LocationsApiData.NextURL = UpdatedApiData.NextURL
+	LocationsApiData.PreviousURL = UpdatedApiData.PreviousURL
 	locations := LocationsApiData.Results
 	for _, location := range locations {
 		fmt.Println(location.Name)
